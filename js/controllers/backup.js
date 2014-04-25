@@ -3,8 +3,10 @@
 angular.module('copay.backup').controller('BackupController',
   function($scope, $rootScope, $location, $window, $timeout) {
     $scope.title = 'Backup';
+    $scope.isHttp = $window.location.protocol === 'http:';
+    $scope.isHttps = $window.location.protocol === 'https:';
 
-    var filename = $rootScope.wallet.id + '.json.aes';
+    var filename = $rootScope.wallet.id + '.json';
 
     // TODO: get the real encrypted wallet.
     var _getEncryptedWallet = function() {
@@ -24,11 +26,12 @@ angular.module('copay.backup').controller('BackupController',
       saveAs(blob, filename);
     };
 
-    $scope.dropbox = function() { 
-      var blob = _getWalletBlob();
-      var url = $window.URL.createObjectURL(blob);
-
-      // TODO: send the blob to Dropbox, (if we can...)
+    $scope.dropbox = function() {
+      if ($scope.isHttp || $scope.isHttps) {
+        var blob = _getWalletBlob();
+        var url = $window.URL.createObjectURL(blob);
+        Dropbox.save(url, filename);
+      }
     };
 
     $scope.email = function() {
